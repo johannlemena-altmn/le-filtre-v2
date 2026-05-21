@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f4eee2">
+<title>Le Filtre — maquette v2 (mobile-first)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4eee2; --surface:#fbf7ed; --surface-2:#fffdf7;
+    --ink:#2c2822; --ink-soft:#4f483d; --muted:#928975;
+    --border:#e3dac6; --border-strong:#d2c6aa;
+    --green:#4a8e50; --green-soft:#e7efe3;
+    --terre:#c47050; --terre-soft:#f3e3d8;
+    --blue:#5b7c8d; --blue-soft:#e1e8eb;
+    --shadow:0 1px 2px rgba(44,40,34,.04), 0 6px 20px rgba(44,40,34,.06);
+    --nav-h:64px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 14px);
+  }
+  .serif{font-family:'Fraunces',serif;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+
+  /* ---------- Shell — mobile first ---------- */
+  .app{max-width:680px;margin:0 auto;padding:0 16px;}
+  .topbar{display:flex;align-items:baseline;gap:10px;padding:20px 4px 16px;}
+  .brand{font-family:'Fraunces',serif;font-size:20px;font-weight:600;letter-spacing:-.01em;}
+  .brand .dot{color:var(--terre);}
+  .tagline{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.12em;}
+
+  .screen{display:none;animation:rise .35s ease;}
+  .screen.active{display:block;}
+  @keyframes rise{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ---------- Bottom nav ---------- */
+  .botnav{
+    position:fixed;left:0;right:0;bottom:0;z-index:50;
+    display:flex;justify-content:space-around;
+    background:var(--surface-2);border-top:1px solid var(--border-strong);
+    padding-bottom:env(safe-area-inset-bottom);
+    height:calc(var(--nav-h) + env(safe-area-inset-bottom));
+  }
+  .botnav button{
+    flex:1;background:none;border:none;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    font-family:'Inter',sans-serif;font-size:11px;font-weight:500;color:var(--muted);
+    padding-top:8px;
+  }
+  .botnav button .ico{font-size:19px;line-height:1;}
+  .botnav button.active{color:var(--terre);}
+  .botnav button.active .ico{transform:translateY(-1px);}
+
+  /* ---------- Generic ---------- */
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:10.5px;
+    text-transform:uppercase;letter-spacing:.13em;color:var(--muted);margin-bottom:8px;}
+  .h-screen{font-family:'Fraunces',serif;font-size:21px;font-weight:500;
+    line-height:1.3;letter-spacing:-.01em;margin-bottom:6px;}
+  .sub-screen{color:var(--muted);font-size:13.5px;margin-bottom:22px;}
+  .card{background:var(--surface);border:1px solid var(--border);
+    border-radius:14px;padding:18px;box-shadow:var(--shadow);}
+  .btn{
+    font-family:'Inter',sans-serif;font-size:14px;font-weight:500;
+    border-radius:10px;padding:13px 18px;cursor:pointer;width:100%;
+    border:1px solid var(--border-strong);background:var(--surface-2);color:var(--ink);
+    transition:transform .12s, box-shadow .12s;
+  }
+  .btn:active{transform:scale(.985);}
+  .btn.primary{background:var(--green);border-color:var(--green);color:#fff;}
+  .btn.terre{background:var(--terre);border-color:var(--terre);color:#fff;}
+  .btn.blue{background:var(--blue);border-color:var(--blue);color:#fff;}
+  .btn.ghost{background:none;border-color:transparent;color:var(--muted);}
+  .btn:disabled{opacity:.42;cursor:not-allowed;}
+  .btn-row{display:flex;flex-direction:column;gap:9px;}
+  .back{
+    display:inline-flex;align-items:center;gap:6px;background:none;border:none;
+    font-family:'Inter',sans-serif;font-size:13px;color:var(--muted);
+    cursor:pointer;padding:4px 0;margin-bottom:8px;
+  }
+  .pill{display:inline-flex;align-items:center;gap:5px;
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;
+    padding:3px 9px;border-radius:999px;
+    background:var(--surface-2);border:1px solid var(--border);color:var(--muted);}
+  .pill.green{background:var(--green-soft);border-color:#cfe0ca;color:#356b3a;}
+  .pill.terre{background:var(--terre-soft);border-color:#e6c9b6;color:#9a5034;}
+  .pill.blue{background:var(--blue-soft);border-color:#c6d4d9;color:#3f5d6a;}
+
+  /* ---------- Gauge ---------- */
+  .gauge{display:flex;gap:4px;margin:6px 0;}
+  .gauge i{height:7px;flex:1;border-radius:3px;background:var(--border);}
+  .gauge i.on{background:var(--green);}
+  .gauge i.warm{background:var(--terre);}
+  .gauge-mix{display:flex;flex-direction:column;gap:9px;margin-top:4px;}
+  .gauge-mix .row{display:flex;align-items:center;gap:10px;}
+  .gauge-mix .lbl{font-size:11.5px;color:var(--ink-soft);width:78px;flex-shrink:0;}
+  .gauge-mix .bar{flex:1;height:6px;border-radius:3px;background:var(--border);overflow:hidden;}
+  .gauge-mix .bar span{display:block;height:100%;border-radius:3px;}
+  .gauge-mix .pct{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);width:34px;text-align:right;}
+
+  /* ---------- RITUEL ---------- */
+  .ritual-card{
+    background:var(--surface-2);border:1px solid var(--border-strong);
+    border-radius:18px;padding:24px 20px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden;
+  }
+  .ritual-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--terre);}
+  .dormant{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--terre);
+    text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;}
+  .big-q{font-family:'Fraunces',serif;font-size:23px;line-height:1.3;font-weight:500;
+    letter-spacing:-.015em;margin-bottom:16px;}
+  .intention{border-left:2px solid var(--border-strong);padding-left:13px;
+    color:var(--ink-soft);font-size:13.5px;margin-bottom:18px;}
+  .intention em{font-family:'Fraunces',serif;font-style:italic;color:var(--ink);}
+  .ritual-meta{display:flex;flex-wrap:wrap;gap:8px 14px;margin-bottom:16px;
+    color:var(--muted);font-size:12.5px;}
+  .relance-box{
+    background:var(--blue-soft);border:1px solid #c6d4d9;border-radius:12px;
+    padding:14px;margin:18px 0;
+  }
+  .relance-box .tag{font-family:'JetBrains Mono',monospace;font-size:10px;
+    text-transform:uppercase;letter-spacing:.1em;color:#3f5d6a;margin-bottom:6px;}
+  .relance-box .q{font-family:'Fraunces',serif;font-size:15px;font-style:italic;color:var(--ink);}
+  .gentle{margin-top:24px;color:var(--muted);font-size:13px;text-align:center;}
+  .gentle a{color:var(--terre);cursor:pointer;border-bottom:1px solid #e6c9b6;}
+
+  /* ---------- CAPTURE ---------- */
+  .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+  .mode{
+    background:var(--surface);border:1px solid var(--border);border-radius:13px;
+    padding:14px 10px;text-align:center;cursor:pointer;transition:transform .12s,border-color .12s;
+  }
+  .mode:active{transform:scale(.97);}
+  .mode.sel{border-color:var(--terre);background:var(--terre-soft);}
+  .mode .em{font-size:22px;display:block;margin-bottom:5px;}
+  .mode .nm{font-size:12.5px;font-weight:600;}
+  .mode .ds{font-size:10.5px;color:var(--muted);margin-top:2px;}
+  .field{margin-bottom:18px;}
+  .field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:5px;}
+  .field .hint{font-size:11.5px;color:var(--muted);font-weight:400;margin-bottom:8px;}
+  textarea,input[type=text],select{
+    width:100%;font-family:'Inter',sans-serif;font-size:16px;color:var(--ink);
+    background:var(--surface-2);border:1px solid var(--border-strong);
+    border-radius:10px;padding:12px;resize:vertical;
+  }
+  textarea:focus,input:focus,select:focus{outline:2px solid var(--green-soft);border-color:var(--green);}
+  .field.key{background:var(--terre-soft);border:1px solid #e6c9b6;border-radius:12px;padding:15px;}
+  .field.key label{color:#9a5034;}
+  .field.key textarea{background:#fff;border-color:#e6c9b6;}
+  .cost{display:flex;align-items:center;gap:7px;margin-top:8px;
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);flex-wrap:wrap;}
+  .cost b{color:var(--green);font-weight:500;}
+  .pdf-note{
+    background:var(--green-soft);border:1px solid #cfe0ca;border-radius:10px;
+    padding:11px 13px;font-size:12px;color:#356b3a;margin-top:9px;
+  }
+
+  /* ---------- CHANTIERS ---------- */
+  .chantier{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    padding:16px 16px 6px;margin-bottom:14px;box-shadow:var(--shadow);}
+  .chantier h3{font-family:'Fraunces',serif;font-size:17px;font-weight:600;}
+  .chantier .ch-meta{font-size:11.5px;color:var(--muted);margin-bottom:10px;}
+  .q-row{display:flex;align-items:center;gap:10px;padding:11px 0;cursor:pointer;
+    border-top:1px solid var(--border);}
+  .q-row:active .q-text{color:var(--terre);}
+  .q-text{font-size:13.5px;flex:1;line-height:1.4;}
+  .q-mini{display:flex;gap:3px;width:46px;flex-shrink:0;}
+  .q-mini i{height:5px;flex:1;border-radius:2px;background:var(--border);}
+  .q-mini i.on{background:var(--green);}
+  .q-mini i.warm{background:var(--terre);}
+
+  /* ---------- QUESTION CARD ---------- */
+  .crumb{font-size:11.5px;color:var(--muted);margin-bottom:10px;}
+  .crumb b{color:var(--terre);font-weight:500;}
+  .section-t{font-family:'JetBrains Mono',monospace;font-size:10.5px;
+    text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:22px 0 10px;}
+  .conn{display:flex;gap:11px;padding:13px 0;border-bottom:1px dashed var(--border);}
+  .conn:last-child{border-bottom:none;}
+  .conn .ic{width:32px;height:32px;border-radius:9px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:15px;
+    background:var(--surface-2);border:1px solid var(--border);}
+  .conn .title{font-weight:600;font-size:13px;line-height:1.35;}
+  .conn .why{font-family:'Fraunces',serif;font-style:italic;color:var(--ink-soft);
+    font-size:13px;margin-top:3px;}
+  .conn .when{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px;}
+
+  /* ---------- ANALYSER ---------- */
+  .an-block{background:var(--surface);border:1px solid var(--border);
+    border-radius:13px;padding:15px;margin-bottom:13px;box-shadow:var(--shadow);}
+  .an-block .head{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+  .an-block .head .e{font-size:16px;}
+  .an-block .head .t{font-family:'Fraunces',serif;font-size:15px;font-weight:600;}
+  .an-block p{font-size:13.5px;color:var(--ink-soft);}
+  .an-block em{font-family:'Fraunces',serif;font-style:italic;color:var(--ink);}
+  .tension{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;margin-top:8px;}
+  .tension .vs{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--terre);
+    border:1px solid #e6c9b6;border-radius:6px;padding:2px 5px;flex-shrink:0;margin-top:1px;}
+  .gap-li{font-size:12.5px;color:var(--ink-soft);padding:5px 0;
+    border-bottom:1px dashed var(--border);}
+  .gap-li:last-child{border:none;}
+  .relance-an{background:var(--blue-soft);border:1px solid #c6d4d9;border-radius:10px;
+    padding:11px 13px;margin-top:9px;}
+  .relance-an .q{font-family:'Fraunces',serif;font-style:italic;font-size:13.5px;}
+  .relance-an .a{font-size:12px;color:#3f5d6a;margin-top:6px;}
+  .relance-an.todo{background:var(--surface-2);border-color:var(--border-strong);}
+  .relance-an.todo .a{color:var(--muted);}
+  .ia-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px;}
+
+  /* ---------- PRODUIRE ---------- */
+  .editor{background:var(--surface-2);border:1px solid var(--border);
+    border-radius:14px;padding:20px 18px;box-shadow:var(--shadow);margin-bottom:14px;}
+  .editor h1{font-family:'Fraunces',serif;font-size:21px;font-weight:600;
+    line-height:1.3;margin-bottom:5px;}
+  .editor .esub{color:var(--muted);font-size:12px;margin-bottom:16px;}
+  .editor p{color:var(--ink-soft);margin-bottom:11px;font-size:14px;}
+  .editor .ph{color:var(--muted);font-style:italic;}
+  .matiere{background:var(--green-soft);border:1px solid #cfe0ca;border-radius:14px;padding:15px;}
+  .matiere h4{font-family:'JetBrains Mono',monospace;font-size:10.5px;
+    text-transform:uppercase;letter-spacing:.1em;color:#356b3a;margin-bottom:10px;font-weight:500;}
+  .mat-item{background:#fff;border:1px solid #d3e3cd;border-radius:9px;
+    padding:9px 11px;margin-bottom:8px;font-size:12px;cursor:pointer;}
+  .mat-item:active{transform:scale(.98);}
+  .mat-item .mt{font-weight:600;}
+  .mat-item .mq{font-family:'Fraunces',serif;font-style:italic;color:var(--ink-soft);margin-top:2px;}
+
+  .footnote{margin-top:22px;color:var(--muted);font-size:11.5px;line-height:1.55;}
+  .footnote em{font-family:'Fraunces',serif;font-style:italic;}
+
+  /* ---------- Desktop ---------- */
+  @media(min-width:720px){
+    :root{--nav-h:0px;}
+    body{padding-bottom:40px;}
+    .app{padding:0 24px;}
+    .botnav{
+      position:static;max-width:680px;margin:4px auto 26px;
+      border:1px solid var(--border-strong);border-radius:14px;
+      height:auto;background:var(--surface);box-shadow:var(--shadow);
+    }
+    .botnav button{flex-direction:row;gap:7px;font-size:13.5px;padding:11px;}
+    .botnav button .ico{font-size:16px;}
+    .h-screen{font-size:25px;}
+    .big-q{font-size:29px;}
+    .ritual-card{padding:32px 30px;}
+    .mode-grid{grid-template-columns:repeat(4,1fr);}
+    .produce-grid{display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start;}
+    .btn-row{flex-direction:row;}
+    .btn{width:auto;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <span class="brand">Le Filtre<span class="dot">.</span></span>
+    <span class="tagline">rituel de pensée — maquette v2</span>
+  </div>
+
+  <!-- ======= RITUEL ======= -->
+  <section class="screen active" id="rituel">
+    <div class="eyebrow">Ton rituel · jeudi 21 mai</div>
+    <p class="h-screen">Une question t'attend.</p>
+    <p class="sub-screen">Dix minutes. Une seule chose à faire : penser un peu plus loin.</p>
+
+    <div class="ritual-card">
+      <div class="dormant">● Ce fil dort depuis 5 jours</div>
+      <div class="big-q">Comment raconter le design pour qu'il soit compris, et pas seulement vu&nbsp;?</div>
+      <div class="intention">
+        Pourquoi je creuse ça — <em>je veux que le studio low-tech sache présenter ses
+        projets sans jargon, pour que des non-initiés y adhèrent.</em>
+      </div>
+      <div class="ritual-meta">
+        <span>📎 3 ressources</span><span>🧩 Studio low-tech / AMO</span><span>🌱 Maturité 52%</span>
+      </div>
+      <div class="gauge">
+        <i class="on"></i><i class="on"></i><i class="on"></i><i class="warm"></i><i></i><i></i>
+      </div>
+
+      <div class="relance-box">
+        <div class="tag">⟡ Relance du jour</div>
+        <div class="q">« Tes 3 ressources parlent toutes de récit. Mais laquelle te dit
+          quelque chose que les deux autres contredisent&nbsp;? »</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn primary" data-go="question">Reprendre ce fil — 10 min</button>
+        <button class="btn ghost" data-go="rituel">Plus tard — une autre</button>
+      </div>
+    </div>
+
+    <p class="gentle">
+      Une idée vient de passer&nbsp;? <a data-go="capture">Capture-la</a> avant qu'elle s'efface.
+    </p>
+  </section>
+
+  <!-- ======= CAPTURE ======= -->
+  <section class="screen" id="capture">
+    <div class="eyebrow">Capture rapide</div>
+    <p class="h-screen">Qu'est-ce qui vient de te traverser&nbsp;?</p>
+    <p class="sub-screen">Tout entre par ici. Le geste tient en dix secondes.</p>
+
+    <div class="mode-grid">
+      <div class="mode sel" data-mode="texte"><span class="em">✍</span>
+        <span class="nm">Texte</span><span class="ds">note, pensée</span></div>
+      <div class="mode" data-mode="lien"><span class="em">🔗</span>
+        <span class="nm">Lien</span><span class="ds">article, vidéo</span></div>
+      <div class="mode" data-mode="audio"><span class="em">🎙</span>
+        <span class="nm">Audio</span><span class="ds">voix, dictée</span></div>
+      <div class="mode" data-mode="fichier"><span class="em">📎</span>
+        <span class="nm">Fichier</span><span class="ds">PDF, image</span></div>
+    </div>
+
+    <div class="card">
+      <div class="field" id="cap-texte">
+        <label>La ressource</label>
+        <div class="hint">Une note, une pensée, un titre de livre…</div>
+        <textarea rows="2">Vidéo — « Le design n'est pas décoratif, il est narratif »</textarea>
+        <div class="cost">⏱ coût de lecture estimé&nbsp;: <b>≈ 9 min</b> · au-dessus de ton seuil de 6 min</div>
+      </div>
+
+      <div class="field" id="cap-fichier" style="display:none;">
+        <label>Le fichier</label>
+        <div class="hint">PDF, image, document.</div>
+        <textarea rows="2">📄 Rapport ADEME — réemploi dans le bâtiment.pdf · 214 pages · 8,3 Mo</textarea>
+        <div class="pdf-note">
+          🌿 PDF lourd détecté. Au lieu de tout envoyer, l'app extraira seulement
+          <strong>ce qui répond à ta question</strong> — c'est ton intention ci-dessous
+          qui sert de filtre. Frugal, et plus utile.
+        </div>
+      </div>
+
+      <div class="field key">
+        <label>Pourquoi ça compte&nbsp;? — une ligne</label>
+        <div class="hint" style="color:#9a5034;">
+          C'est <strong>ça</strong> que tu chercheras dans trois jours. Sans cette ligne, le fil meurt.</div>
+        <textarea rows="2">Me donne un angle pour expliquer nos projets sans jargon — à relier au livre Storytelling.</textarea>
+      </div>
+
+      <div class="field">
+        <label>L'accrocher à une question</label>
+        <div class="hint">Une ressource ne flotte jamais seule.</div>
+        <select>
+          <option>Comment raconter le design pour qu'il soit compris, et pas seulement vu ?</option>
+          <option>Qu'est-ce qui rend une matière « sobre » au-delà du bilan carbone ?</option>
+          <option>Pourquoi le réemploi reste-t-il marginal dans le bâtiment ?</option>
+          <option>+ Nouvelle question…</option>
+        </select>
+      </div>
+
+      <button class="btn primary" data-go="rituel">Capturer et ranger</button>
+    </div>
+  </section>
+
+  <!-- ======= CHANTIERS ======= -->
+  <section class="screen" id="chantiers">
+    <div class="eyebrow">Tes chantiers</div>
+    <p class="h-screen">Quatre chantiers, pas plus.</p>
+    <p class="sub-screen">Chaque chantier abrite des questions vivantes. Chaque question abrite des ressources.</p>
+
+    <div class="chantier">
+      <h3>Studio low-tech / AMO</h3>
+      <div class="ch-meta">3 questions vivantes</div>
+      <div class="q-row" data-go="question">
+        <span class="q-text">Comment raconter le design pour qu'il soit compris, et pas seulement vu ?</span>
+        <span class="q-mini"><i class="on"></i><i class="on"></i><i class="warm"></i><i></i></span></div>
+      <div class="q-row" data-go="question">
+        <span class="q-text">Quels matériaux circulaires tiennent un cahier des charges AMO ?</span>
+        <span class="q-mini"><i class="on"></i><i></i><i></i><i></i></span></div>
+      <div class="q-row" data-go="question">
+        <span class="q-text">Comment chiffrer la valeur d'un bâtiment réversible ?</span>
+        <span class="q-mini"><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+    </div>
+
+    <div class="chantier">
+      <h3>Lettre — Sobriété matières</h3>
+      <div class="ch-meta">3 questions vivantes · 1 fil prêt</div>
+      <div class="q-row" data-go="questionmure">
+        <span class="q-text">Qu'est-ce qui rend une matière « sobre » au-delà du bilan carbone ?</span>
+        <span class="q-mini"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+      <div class="q-row" data-go="question">
+        <span class="q-text">Pourquoi le réemploi reste-t-il marginal dans le bâtiment ?</span>
+        <span class="q-mini"><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+      <div class="q-row" data-go="question">
+        <span class="q-text">La sobriété peut-elle être désirable, pas seulement vertueuse ?</span>
+        <span class="q-mini"><i class="on"></i><i></i><i></i><i></i></span></div>
+    </div>
+
+    <div class="chantier">
+      <h3>Mémoire</h3>
+      <div class="ch-meta">2 questions vivantes</div>
+      <div class="q-row" data-go="question">
+        <span class="q-text">Comment mesurer la dépendance aux écrans sans culpabiliser ?</span>
+        <span class="q-mini"><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+      <div class="q-row" data-go="question">
+        <span class="q-text">Qu'est-ce qu'une « technologie à la bonne échelle » ?</span>
+        <span class="q-mini"><i class="on"></i><i class="warm"></i><i></i><i></i></span></div>
+    </div>
+
+    <div class="chantier">
+      <h3>Boussole</h3>
+      <div class="ch-meta">1 question vivante</div>
+      <div class="q-row" data-go="question">
+        <span class="q-text">Quelle place pour l'attention dans un projet d'orientation ?</span>
+        <span class="q-mini"><i class="on"></i><i></i><i></i><i></i></span></div>
+    </div>
+  </section>
+
+  <!-- ======= QUESTION CARD ======= -->
+  <section class="screen" id="question">
+    <button class="back" data-go="chantiers">← Chantiers</button>
+    <div class="crumb">Chantier <b>Studio low-tech / AMO</b> · question vivante</div>
+    <div class="big-q" style="font-size:23px;">
+      Comment raconter le design pour qu'il soit compris, et pas seulement vu&nbsp;?</div>
+    <div class="intention" style="margin-bottom:18px;">
+      Mon intention — <em>je veux que le studio low-tech sache présenter ses projets sans
+      jargon, pour que des non-initiés y adhèrent.</em>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+        <span style="font-weight:600;font-size:13px;">Maturité du fil</span>
+        <span class="pill terre">🌱 52% — en chemin</span>
+      </div>
+      <div class="gauge-mix">
+        <div class="row"><span class="lbl">Matière</span>
+          <span class="bar"><span style="width:75%;background:var(--green);"></span></span>
+          <span class="pct">75%</span></div>
+        <div class="row"><span class="lbl">Réflexion</span>
+          <span class="bar"><span style="width:40%;background:var(--blue);"></span></span>
+          <span class="pct">40%</span></div>
+        <div class="row"><span class="lbl">Régularité</span>
+          <span class="bar"><span style="width:42%;background:var(--terre);"></span></span>
+          <span class="pct">42%</span></div>
+      </div>
+      <p style="font-size:11.5px;color:var(--muted);margin-top:10px;">
+        La jauge mêle trois choses : la matière accrochée, les relances auxquelles tu as
+        répondu, et la régularité de tes retours. Empiler des ressources ne suffit pas —
+        il faut aussi penser, et revenir.</p>
+    </div>
+
+    <div class="section-t">Le fil — 3 connexions</div>
+    <div class="card" style="padding:4px 16px;">
+      <div class="conn"><div class="ic">🎬</div><div>
+        <div class="title">Vidéo — « Le design n'est pas décoratif, il est narratif »</div>
+        <div class="why">« Un angle pour expliquer nos projets sans jargon. »</div>
+        <div class="when">capté il y a 5 jours · ≈ 9 min</div></div></div>
+      <div class="conn"><div class="ic">📕</div><div>
+        <div class="title">Livre — Storytelling : l'art de captiver par le design</div>
+        <div class="why">« Chercher le chapitre sur la structure d'un récit visuel. »</div>
+        <div class="when">capté il y a 2 jours · en cours</div></div></div>
+      <div class="conn"><div class="ic">🎙</div><div>
+        <div class="title">Note vocale — idée en marchant</div>
+        <div class="why">« Présenter chaque projet comme un avant / après ? »</div>
+        <div class="when">capté hier · 40 s</div></div></div>
+    </div>
+
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn blue" data-go="analyser">⟡ Analyser ce fil</button>
+      <button class="btn terre" data-go="capture">+ Ajouter une connexion</button>
+      <button class="btn" disabled title="S'active quand le fil est mûr">
+        Produire — fil pas encore mûr</button>
+    </div>
+  </section>
+
+  <!-- ======= QUESTION MÛRE ======= -->
+  <section class="screen" id="questionmure">
+    <button class="back" data-go="chantiers">← Chantiers</button>
+    <div class="crumb">Chantier <b>Lettre — Sobriété matières</b> · question vivante</div>
+    <div class="big-q" style="font-size:23px;">
+      Qu'est-ce qui rend une matière « sobre », au-delà de son bilan carbone&nbsp;?</div>
+    <div class="intention" style="margin-bottom:18px;">
+      Mon intention — <em>écrire le n°7 de la Lettre sans tomber dans le réflexe
+      « carbone = vérité ».</em>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+        <span style="font-weight:600;font-size:13px;">Maturité du fil</span>
+        <span class="pill green">🌾 91% — mûr</span>
+      </div>
+      <div class="gauge-mix">
+        <div class="row"><span class="lbl">Matière</span>
+          <span class="bar"><span style="width:90%;background:var(--green);"></span></span>
+          <span class="pct">90%</span></div>
+        <div class="row"><span class="lbl">Réflexion</span>
+          <span class="bar"><span style="width:95%;background:var(--blue);"></span></span>
+          <span class="pct">95%</span></div>
+        <div class="row"><span class="lbl">Régularité</span>
+          <span class="bar"><span style="width:88%;background:var(--terre);"></span></span>
+          <span class="pct">88%</span></div>
+      </div>
+      <p style="font-size:11.5px;color:#356b3a;margin-top:10px;">
+        Ce fil est mûr : assez de matière, les relances sont traitées, tu y es revenu
+        régulièrement. Tu peux le faire sortir.</p>
+    </div>
+
+    <div class="section-t">Le fil — 4 connexions</div>
+    <div class="card" style="padding:4px 16px;">
+      <div class="conn"><div class="ic">📄</div><div>
+        <div class="title">Étude ADEME — réemploi dans le bâtiment</div>
+        <div class="why">« Le carbone cache le coût social de l'extraction. »</div>
+        <div class="when">capté il y a 12 jours</div></div></div>
+      <div class="conn"><div class="ic">📕</div><div>
+        <div class="title">Livre — L'âge des low tech</div>
+        <div class="why">« La sobriété est une question de besoin, pas de matériau. »</div>
+        <div class="when">capté il y a 9 jours</div></div></div>
+      <div class="conn"><div class="ic">⟡</div><div>
+        <div class="title">Relance répondue — « Et la réparabilité ? »</div>
+        <div class="why">« Elle compte autant que la matière elle-même. »</div>
+        <div class="when">répondu il y a 3 jours</div></div></div>
+      <div class="conn"><div class="ic">🔗</div><div>
+        <div class="title">Article — la face cachée des terres rares</div>
+        <div class="why">« Le local ne dit rien de la profondeur de la chaîne. »</div>
+        <div class="when">capté il y a 2 jours</div></div></div>
+    </div>
+
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn terre" data-go="analyser">⟡ Analyser ce fil</button>
+      <button class="btn" data-go="capture">+ Ajouter une connexion</button>
+      <button class="btn primary" data-go="produire">🌾 Produire — le fil est mûr</button>
+    </div>
+  </section>
+
+  <!-- ======= ANALYSER ======= -->
+  <section class="screen" id="analyser">
+    <button class="back" data-go="question">← La question</button>
+    <div class="eyebrow">Espace d'analyse</div>
+    <p class="h-screen">Penser ce fil, pas seulement le remplir.</p>
+    <p class="sub-screen">L'app relit tes 3 ressources et t'aide à les faire dialoguer.</p>
+
+    <div class="an-block">
+      <div class="head"><span class="e">🧶</span><span class="t">Synthèse du fil</span></div>
+      <p>Tes trois ressources convergent sur une idée : un design n'est compris que s'il
+        est <em>raconté</em>. La vidéo pose le principe, le livre Storytelling donne une
+        structure de récit, ta note vocale propose un format concret — l'avant / après.</p>
+    </div>
+
+    <div class="an-block">
+      <div class="head"><span class="e">⚡</span><span class="t">Tensions à trancher</span></div>
+      <div class="tension"><span class="vs">vs</span>
+        <span>Le livre dit « le récit doit créer une tension dramatique ». Ta note vocale
+        veut un format avant / après — efficace, mais sans tension. <strong>L'un des deux
+        doit céder.</strong></span></div>
+    </div>
+
+    <div class="an-block">
+      <div class="head"><span class="e">🕳</span><span class="t">Ce qui manque pour conclure</span></div>
+      <div class="gap-li">Aucune ressource ne montre un exemple <em>raté</em> — un design mal raconté.</div>
+      <div class="gap-li">Tu n'as pas encore le point de vue d'un non-initié, ta cible.</div>
+    </div>
+
+    <div class="an-block">
+      <div class="head"><span class="e">🗺</span><span class="t">Plan qui émerge</span></div>
+      <p>1. Le design qu'on voit sans comprendre — le problème.<br>
+         2. Raconter = donner une structure (principe + format avant/après).<br>
+         3. Tester sur un vrai non-initié.</p>
+    </div>
+
+    <div class="an-block">
+      <div class="head"><span class="e">⟡</span><span class="t">Relances — c'est ça qui fait mûrir</span></div>
+      <div class="relance-an">
+        <div class="q">« Laquelle de tes ressources te contredit ? »</div>
+        <div class="a">✓ Répondu : « Le livre — il veut du drame, moi je veux du sobre. »</div>
+      </div>
+      <div class="relance-an todo">
+        <div class="q">« Pour qui exactement ce récit doit-il fonctionner ? »</div>
+        <div class="a">— à répondre · +15% de maturité</div>
+      </div>
+      <div class="ia-foot">
+        <span class="pill blue">modèle : Haiku</span>
+        <span>· coût de cette analyse ≈ 0,002 € · synthèse mise en cache</span>
+      </div>
+    </div>
+
+    <p class="footnote">
+      Note de conception — cet espace est le plus riche de l'app, donc le plus à risque :
+      il doit aider à <em>penser</em>, jamais devenir un tableau de bord qu'on contemple.
+      Règle de garde : une question = un espace, et rien ne s'y fait sans toi.
+    </p>
+  </section>
+
+  <!-- ======= PRODUIRE ======= -->
+  <section class="screen" id="produire">
+    <button class="back" data-go="chantiers">← Chantiers</button>
+    <div class="crumb">Chantier <b>Lettre — Sobriété matières</b> ·
+      <span class="pill green">🌾 fil mûr</span></div>
+    <p class="h-screen">Le fil est mûr. Fais-le sortir.</p>
+    <p class="sub-screen">Tout ce que tu as accumulé et pensé est là, à portée.</p>
+
+    <div class="produce-grid">
+      <div class="editor">
+        <h1>Qu'est-ce qui rend une matière « sobre »&nbsp;?</h1>
+        <div class="esub">Brouillon — Lettre Sobriété matières, n°7</div>
+        <p>Pendant des mois j'ai cru qu'une matière sobre, c'était une matière à faible
+          bilan carbone. Trois ressources, et deux relances, m'ont fait changer d'avis…</p>
+        <p class="ph">[ glisse un bloc depuis la colonne de droite — chaque connexion
+          devient un paragraphe citable ]</p>
+      </div>
+
+      <aside class="matiere">
+        <h4>La matière du fil</h4>
+        <div class="mat-item"><div class="mt">📄 Étude ADEME — réemploi</div>
+          <div class="mq">« Le carbone cache le coût social de l'extraction. »</div></div>
+        <div class="mat-item"><div class="mt">📕 L'âge des low tech</div>
+          <div class="mq">« La sobriété est une question de besoin. »</div></div>
+        <div class="mat-item"><div class="mt">⟡ Relance répondue</div>
+          <div class="mq">« La réparabilité compte autant que la matière. »</div></div>
+        <div class="mat-item"><div class="mt">🔗 Article — terres rares</div>
+          <div class="mq">« Le local ne dit rien de la chaîne. »</div></div>
+      </aside>
+    </div>
+
+    <p class="footnote">
+      L'éditeur (l'ancien « Plume ») n'a pas disparu — il a changé de place : il est
+      désormais au <strong>bout du fil</strong>, atteint quand la pensée a mûri.
+    </p>
+  </section>
+
+</div>
+
+<!-- ======= BOTTOM NAV ======= -->
+<nav class="botnav">
+  <button class="active" data-s="rituel"><span class="ico">◐</span>Rituel</button>
+  <button data-s="capture"><span class="ico">＋</span>Capturer</button>
+  <button data-s="chantiers"><span class="ico">▦</span>Chantiers</button>
+</nav>
+
+<script>
+  var navBtns=document.querySelectorAll('.botnav button');
+  var screens=document.querySelectorAll('.screen');
+  /* écrans contextuels → onglet parent gardé allumé pour l'orientation */
+  var parentTab={question:'chantiers',questionmure:'chantiers',analyser:'chantiers',produire:'chantiers'};
+  function show(id){
+    screens.forEach(function(s){s.classList.toggle('active',s.id===id);});
+    var tab=parentTab[id]||id;
+    navBtns.forEach(function(b){b.classList.toggle('active', b.dataset.s===tab);});
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  navBtns.forEach(function(b){b.addEventListener('click',function(){show(b.dataset.s);});});
+  document.querySelectorAll('[data-go]').forEach(function(el){
+    el.addEventListener('click',function(){show(el.dataset.go);});
+  });
+
+  /* capture mode switcher */
+  var modes=document.querySelectorAll('.mode');
+  modes.forEach(function(m){
+    m.addEventListener('click',function(){
+      modes.forEach(function(x){x.classList.remove('sel');});
+      m.classList.add('sel');
+      var isFile=m.dataset.mode==='fichier';
+      document.getElementById('cap-texte').style.display=isFile?'none':'block';
+      document.getElementById('cap-fichier').style.display=isFile?'block':'none';
+    });
+  });
+</script>
+</body>
+</html>
