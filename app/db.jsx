@@ -225,6 +225,23 @@ async function statsGlobales() {
   };
 }
 
+// Réutiliser une production ailleurs : elle devient une ressource
+// (type texte) d'une autre question. C'est "projeter sur un autre
+// projet". L'intention (pourquoi) reste obligatoire — on ne perd jamais
+// le fil de la réutilisation. On garde un lien de provenance dans meta.
+async function reutiliserProduction({ production, questionCibleId, pourquoi }) {
+  return creerRessource({
+    questionId: questionCibleId,
+    type:       'texte',
+    titre:      production.titre || 'Production réutilisée',
+    contenu:    production.contenu || '',
+    pourquoi,
+    meta: {
+      extraitDe: `Production « ${production.titre || 'sans titre'} »`,
+    },
+  });
+}
+
 // Toutes les productions, enrichies de leur question + chantier,
 // les plus récentes d'abord. C'est le cœur du "second cerveau".
 async function listerRecolte() {
@@ -359,7 +376,7 @@ window.DB = {
   // Productions
   creerProduction, getProduction, mettreAJourProduction,
   // Second cerveau
-  statsGlobales, listerRecolte,
+  statsGlobales, listerRecolte, reutiliserProduction,
   // Régularité / habitude
   serieGlobale,
   // Maturité

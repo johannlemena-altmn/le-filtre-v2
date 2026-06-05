@@ -300,6 +300,88 @@ function FicheQuestion({ questionId, navigate }) {
   );
 }
 
+// ── Modal réutiliser une production ailleurs ───────────────
+function ModalReutiliser({ production, sourceQuestionId, onClose, onFait }) {
+  const [questions, setQuestions] = useState([]);
+  const [cible, setCible]         = useState('');
+  const [pourquoi, setPourquoi]   = useState('');
+  const [saving, setSaving]       = useState(false);
+
+  useEffect(() => {
+    window.DB.listerQuestions().then(qs => {
+      setQuestions(qs.filter(q =>
+        q.id !== sourceQuestionId &&
+        (q.statut === 'vivante' || q.statut === 'mure')
+      ));
+    });
+  }, [sourceQuestionId]);
+
+  async function handle() {
+    if (!cible || !pourquoi.trim()) return;
+    setSaving(true);
+    try {
+      await window.DB.reutiliserProduction({ production, questionCibleId: cible, pourquoi: pourquoi.trim() });
+      onFait(cible);
+    } catch(e) {
+      alert(e.message);
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+        <div className="modal-handle" />
+        <p className="eyebrow">Second cerveau · réutiliser</p>
+        <p className="h-screen" style={{ fontSize: '19px', marginBottom: '6px' }}>
+          Projeter sur un autre fil
+        </p>
+        <p className="sub-screen" style={{ marginBottom: '16px' }}>
+          « {production.titre || 'Production'} » deviendra une ressource du fil que tu choisis.
+        </p>
+
+        {questions.length === 0 ? (
+          <div className="card" style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '13px' }}>
+            Aucune autre question vivante où la projeter.<br />Ouvre d'abord un fil ailleurs.
+          </div>
+        ) : (
+          <>
+            <div className="field">
+              <label>Vers quel fil&nbsp;?</label>
+              <select value={cible} onChange={e => setCible(e.target.value)}>
+                <option value="">— Choisir une question —</option>
+                {questions.map(q => (
+                  <option key={q.id} value={q.id}>{q.intitule}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="field key">
+              <label>Pourquoi ça compte pour ce fil&nbsp;? — une ligne</label>
+              <div className="hint" style={{ color: '#9a5034' }}>
+                Sans cette ligne, la reprise se perd. C'est elle qui relie l'ancien au nouveau.
+              </div>
+              <textarea
+                rows={2}
+                placeholder="M'apporte un angle déjà mûri sur… / Brique réutilisable pour…"
+                value={pourquoi}
+                onChange={e => setPourquoi(e.target.value)}
+              />
+            </div>
+
+            <div className="btn-row">
+              <button className="btn primary" onClick={handle} disabled={!cible || !pourquoi.trim() || saving}>
+                {saving ? 'Projection…' : 'Projeter sur ce fil'}
+              </button>
+              <button className="btn ghost" onClick={onClose}>Annuler</button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Écran Chantiers ────────────────────────────────────────
 function EcranChantiers({ navigate, activeQuestion, setActiveQuestion }) {
   const [chantiers, setChantiers]         = useState([]);
@@ -308,6 +390,7 @@ function EcranChantiers({ navigate, activeQuestion, setActiveQuestion }) {
   const [stats, setStats]                 = useState(null);
   const [recolte, setRecolte]             = useState([]);
   const [recolteOuverte, setRecolteOuverte] = useState(false);
+  const [modalReutiliser, setModalReutiliser] = useState(null); // { production, sourceQuestionId }
   const [showModalC, setShowModalC]       = useState(false);
   const [modalQuestion, setModalQuestion] = useState(null); // { chantierId, chantierNom }
   const [loading, setLoading]             = useState(true);
@@ -474,18 +557,24 @@ function EcranChantiers({ navigate, activeQuestion, setActiveQuestion }) {
           </div>
 
           {recolteOuverte && recolte.map(({ production, question, chantierNom }) => (
-            <div
-              key={production.id}
-              className="recolte-item"
-              onClick={() => question && navigate('produire', { questionId: question.id })}
-            >
+            <div key={production.id} className="recolte-item">
               <div className="rc-ic">📜</div>
-              <div style={{ flex: 1 }}>
+              <div
+                style={{ flex: 1 }}
+                onClick={() => question && navigate('produire', { questionId: question.id })}
+              >
                 <div className="rc-title">{production.titre || (question && question.intitule) || 'Sans titre'}</div>
                 <div className="rc-meta">
                   {chantierNom ? `${chantierNom} · ` : ''}{window.DB.tempsRelatif(production.updatedAt)}
                 </div>
               </div>
+              <button
+                className="rc-reuse"
+                title="Projeter sur un autre fil"
+                onClick={(e) => { e.stopPropagation(); setModalReutiliser({ production, sourceQuestionId: question ? question.id : null }); }}
+              >
+                ↪
+              </button>
             </div>
           ))}
         </div>
@@ -504,6 +593,15 @@ function EcranChantiers({ navigate, activeQuestion, setActiveQuestion }) {
           chantierNom={modalQuestion.chantierNom}
           onClose={() => setModalQuestion(null)}
           onCreer={handleCreerQuestion}
+        />
+      )}
+
+      {modalReutiliser && (
+        <ModalReutiliser
+          production={modalReutiliser.production}
+          sourceQuestionId={modalReutiliser.sourceQuestionId}
+          onClose={() => setModalReutiliser(null)}
+          onFait={(cibleId) => { setModalReutiliser(null); navigate('question', { questionId: cibleId }); }}
         />
       )}
     </div>

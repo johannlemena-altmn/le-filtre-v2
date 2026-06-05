@@ -670,6 +670,18 @@
     }
     .recolte-item .rc-title { font-weight: 600; font-size: 13px; line-height: 1.35; }
     .recolte-item .rc-meta  { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 3px; }
+    .rc-reuse {
+      flex-shrink: 0;
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-2);
+      color: var(--terre);
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform .12s, background .12s;
+    }
+    .rc-reuse:active { transform: scale(.92); background: var(--terre-soft); }
 
     /* ── Empty state ── */
     .empty {
