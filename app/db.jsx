@@ -205,6 +205,43 @@ async function mettreAJourProduction(id, contenu) {
   return db.productions.update(id, { contenu, updatedAt: now() });
 }
 
+// ── SECOND CERVEAU : stats globales + récolte ────────────────
+// La récolte centralise tout ce qui a été produit, pour le
+// reprojeter plus tard sur d'autres projets.
+
+async function statsGlobales() {
+  const [chantiers, questions, productions] = await Promise.all([
+    listerChantiers(),
+    db.questions.toArray(),
+    db.productions.toArray(),
+  ]);
+  const actives = questions.filter(q => q.statut !== 'archivee');
+  return {
+    chantiers:   chantiers.length,
+    vivantes:    actives.filter(q => q.statut === 'vivante').length,
+    mures:       actives.filter(q => q.statut === 'mure').length,
+    produites:   actives.filter(q => q.statut === 'produite').length,
+    productions: productions.length,
+  };
+}
+
+// Toutes les productions, enrichies de leur question + chantier,
+// les plus récentes d'abord. C'est le cœur du "second cerveau".
+async function listerRecolte() {
+  const prods = await db.productions.orderBy('updatedAt').reverse().toArray();
+  const out = [];
+  for (const p of prods) {
+    const q = await db.questions.get(p.questionId);
+    let chantierNom = null;
+    if (q && q.chantierId) {
+      const c = await db.chantiers.get(q.chantierId);
+      chantierNom = c ? c.nom : null;
+    }
+    out.push({ production: p, question: q || null, chantierNom });
+  }
+  return out;
+}
+
 // ── MATURITÉ ────────────────────────────────────────────────
 // Calculée à la volée — jamais stockée brute (cf. SCHEMA.md)
 
@@ -288,6 +325,8 @@ window.DB = {
   creerRelance, listerRelances, repondreRelance,
   // Productions
   creerProduction, getProduction, mettreAJourProduction,
+  // Second cerveau
+  statsGlobales, listerRecolte,
   // Maturité
   calculerMaturite, evaluerMaturite,
   // Helpers

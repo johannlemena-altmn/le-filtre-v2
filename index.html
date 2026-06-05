@@ -552,6 +552,89 @@
       margin: 0 auto 20px;
     }
 
+    /* ── Tableau de bord (bandeau compact) ── */
+    .dash {
+      display: flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow);
+      padding: 12px 4px;
+      margin-bottom: 18px;
+    }
+    .dash .stat {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+    .dash .stat + .stat::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 50%;
+      transform: translateY(-50%);
+      height: 26px;
+      width: 1px;
+      background: var(--border);
+    }
+    .dash .num {
+      font-family: 'Fraunces', serif;
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1;
+      color: var(--ink);
+    }
+    .dash .num.warm { color: var(--terre); }
+    .dash .num.go   { color: var(--green); }
+    .dash .lbl {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    /* ── Pastilles couleur (chantier) ── */
+    .swatches { display: flex; gap: 9px; flex-wrap: wrap; }
+    .swatch {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform .12s;
+    }
+    .swatch:active { transform: scale(.9); }
+    .swatch.sel { border-color: var(--ink); }
+
+    /* ── Récolte (second cerveau) ── */
+    .recolte-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      padding: 6px 0;
+    }
+    .recolte-item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 12px 0;
+      border-top: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .recolte-item:active .rc-title { color: var(--terre); }
+    .recolte-item .rc-ic {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      background: var(--green-soft);
+      border: 1px solid #cfe0ca;
+    }
+    .recolte-item .rc-title { font-weight: 600; font-size: 13px; line-height: 1.35; }
+    .recolte-item .rc-meta  { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 3px; }
+
     /* ── Empty state ── */
     .empty {
       text-align: center;

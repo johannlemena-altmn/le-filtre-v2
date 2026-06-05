@@ -20,17 +20,21 @@ function JaugeMini({ score }) {
   );
 }
 
+// Palette des chantiers (accents du design system)
+const COULEURS = ['#c47050', '#4a8e50', '#5b7c8d', '#a8743f', '#8a6d9e', '#928975'];
+
 // ── Modal création chantier ────────────────────────────────
 function ModalChantier({ onClose, onCreer }) {
   const [nom, setNom]         = useState('');
   const [desc, setDesc]       = useState('');
+  const [couleur, setCouleur] = useState(COULEURS[0]);
   const [saving, setSaving]   = useState(false);
 
   async function handleCreer() {
     if (!nom.trim()) return;
     setSaving(true);
     try {
-      await onCreer({ nom: nom.trim(), description: desc.trim() });
+      await onCreer({ nom: nom.trim(), description: desc.trim(), couleur });
       onClose();
     } catch(e) {
       alert(e.message);
@@ -64,6 +68,20 @@ function ModalChantier({ onClose, onCreer }) {
             value={desc}
             onChange={e => setDesc(e.target.value)}
           />
+        </div>
+        <div className="field">
+          <label>Couleur</label>
+          <div className="hint">Pour repérer ce chantier d'un coup d'œil.</div>
+          <div className="swatches">
+            {COULEURS.map(c => (
+              <span
+                key={c}
+                className={`swatch ${couleur === c ? 'sel' : ''}`}
+                style={{ background: c }}
+                onClick={() => setCouleur(c)}
+              />
+            ))}
+          </div>
         </div>
         <div className="btn-row">
           <button className="btn primary" onClick={handleCreer} disabled={!nom.trim() || saving}>
@@ -287,6 +305,9 @@ function EcranChantiers({ navigate, activeQuestion, setActiveQuestion }) {
   const [chantiers, setChantiers]         = useState([]);
   const [questionsMap, setQuestionsMap]   = useState({});
   const [maturiteMap, setMaturiteMap]     = useState({});
+  const [stats, setStats]                 = useState(null);
+  const [recolte, setRecolte]             = useState([]);
+  const [recolteOuverte, setRecolteOuverte] = useState(false);
   const [showModalC, setShowModalC]       = useState(false);
   const [modalQuestion, setModalQuestion] = useState(null); // { chantierId, chantierNom }
   const [loading, setLoading]             = useState(true);
@@ -309,6 +330,8 @@ function EcranChantiers({ navigate, activeQuestion, setActiveQuestion }) {
     }
     setQuestionsMap(qMap);
     setMaturiteMap(mMap);
+    setStats(await window.DB.statsGlobales());
+    setRecolte(await window.DB.listerRecolte());
     setLoading(false);
   }, []);
 
@@ -359,9 +382,30 @@ function EcranChantiers({ navigate, activeQuestion, setActiveQuestion }) {
         <span className="tagline">rituel de pensée</span>
       </div>
 
-      <div className="eyebrow">Tes chantiers</div>
-      <p className="h-screen">Questions vivantes.</p>
-      <p className="sub-screen">Chaque chantier abrite des questions. Chaque question abrite des ressources.</p>
+      <div className="eyebrow">Tes projets</div>
+      <p className="h-screen">Tes chantiers, d'un coup d'œil.</p>
+      <p className="sub-screen">Chaque chantier abrite des questions vivantes. Ce qui mûrit se récolte en bas.</p>
+
+      {stats && chantiers.length > 0 && (
+        <div className="dash">
+          <div className="stat">
+            <div className="num">{stats.chantiers}</div>
+            <div className="lbl">projets</div>
+          </div>
+          <div className="stat">
+            <div className="num">{stats.vivantes}</div>
+            <div className="lbl">vivantes</div>
+          </div>
+          <div className="stat">
+            <div className="num warm">{stats.mures}</div>
+            <div className="lbl">mûrs</div>
+          </div>
+          <div className="stat">
+            <div className="num go">{stats.productions}</div>
+            <div className="lbl">récoltés</div>
+          </div>
+        </div>
+      )}
 
       {chantiers.length === 0 ? (
         <div className="empty">
@@ -379,6 +423,9 @@ function EcranChantiers({ navigate, activeQuestion, setActiveQuestion }) {
             return (
               <div key={c.id} className="chantier" style={{ borderLeft: c.couleur ? `4px solid ${c.couleur}` : undefined }}>
                 <h3>{c.nom}</h3>
+                {c.description && (
+                  <p style={{ fontSize: '12.5px', color: 'var(--ink-soft)', margin: '2px 0 6px' }}>{c.description}</p>
+                )}
                 <div className="ch-meta">
                   {qs.length} question{qs.length !== 1 ? 's' : ''} vivante{qs.length !== 1 ? 's' : ''}
                   {mures > 0 ? ` · ${mures} fil${mures > 1 ? 's' : ''} prêt${mures > 1 ? 's' : ''}` : ''}
@@ -411,6 +458,37 @@ function EcranChantiers({ navigate, activeQuestion, setActiveQuestion }) {
             + Nouveau chantier
           </button>
         </>
+      )}
+
+      {/* ── La récolte : second cerveau — tout ce qui a été produit ── */}
+      {recolte.length > 0 && (
+        <div className="card" style={{ marginTop: '8px', marginBottom: '20px' }}>
+          <div className="recolte-head" onClick={() => setRecolteOuverte(o => !o)}>
+            <div>
+              <div className="section-t" style={{ margin: 0 }}>🌾 Ta récolte</div>
+              <div style={{ fontSize: '11.5px', color: 'var(--muted)', marginTop: '2px' }}>
+                {recolte.length} production{recolte.length !== 1 ? 's' : ''} — réutilisable pour tes prochains projets
+              </div>
+            </div>
+            <span style={{ color: 'var(--muted)', fontSize: '13px' }}>{recolteOuverte ? '▲' : '▼'}</span>
+          </div>
+
+          {recolteOuverte && recolte.map(({ production, question, chantierNom }) => (
+            <div
+              key={production.id}
+              className="recolte-item"
+              onClick={() => question && navigate('produire', { questionId: question.id })}
+            >
+              <div className="rc-ic">📜</div>
+              <div style={{ flex: 1 }}>
+                <div className="rc-title">{production.titre || (question && question.intitule) || 'Sans titre'}</div>
+                <div className="rc-meta">
+                  {chantierNom ? `${chantierNom} · ` : ''}{window.DB.tempsRelatif(production.updatedAt)}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
 
       {showModalC && (
