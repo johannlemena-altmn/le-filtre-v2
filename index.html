@@ -505,6 +505,61 @@
     .mat-item .mt { font-weight: 600; }
     .mat-item .mq { font-family: 'Fraunces', serif; font-style: italic; color: var(--ink-soft); margin-top: 2px; }
 
+    /* ── Coup de pouce d'installation ── */
+    .install-hint {
+      position: fixed;
+      left: 12px; right: 12px;
+      bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 12px);
+      z-index: 120;
+      max-width: calc(var(--max-w) - 24px);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      background: var(--surface-2);
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: 0 4px 24px rgba(44,40,34,.16);
+      animation: rise .3s ease forwards;
+    }
+    .install-hint .ih-ico {
+      font-size: 18px;
+      color: var(--terre);
+      flex-shrink: 0;
+    }
+    .install-hint .ih-text {
+      flex: 1;
+      font-size: 12.5px;
+      line-height: 1.4;
+      color: var(--ink-soft);
+    }
+    .install-hint .ih-text b { color: var(--ink); font-weight: 600; }
+    .install-hint .ih-cta {
+      flex-shrink: 0;
+      background: var(--terre);
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      font-size: 12.5px;
+      font-weight: 500;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    .install-hint .ih-close {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 2px;
+    }
+    @media (min-width: 720px) {
+      .install-hint { bottom: 20px; }
+    }
+
     /* ── Toast ── */
     .toast {
       position: fixed;
