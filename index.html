@@ -7,7 +7,15 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Le Filtre">
+  <meta name="description" content="Un rituel de pensée : capture tes intentions, rattache-les à tes questions vivantes, reviens-y jusqu'à maturité.">
   <title>Le Filtre — rituel de pensée</title>
+
+  <!-- PWA : installable + écran d'accueil iOS/Android -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -590,5 +598,14 @@
   <script type="text/babel" src="app/chantiers.jsx"></script>
   <script type="text/babel" src="app/produire.jsx"></script>
   <script type="text/babel" src="app/app.jsx"></script>
+
+  <!-- Service worker : hors-ligne + installation sur l'écran d'accueil -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>
