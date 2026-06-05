@@ -255,6 +255,39 @@ function scoreRegularite(activiteLog = []) {
   return Math.min(100, (jours.size / OBJECTIF_JOURS) * 100);
 }
 
+// Régularité globale : les 7 derniers jours + la série en cours.
+// Ancre l'habitude "revenir" sans gamification lourde.
+async function serieGlobale() {
+  const questions = await db.questions.toArray();
+  const jours = new Set();
+  for (const q of questions) {
+    for (const t of (q.activiteLog || [])) jours.add(new Date(t).toDateString());
+  }
+  const aujourdhui = new Date();
+  const initiales = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+  const semaine = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(aujourdhui);
+    d.setDate(aujourdhui.getDate() - i);
+    semaine.push({
+      lettre: initiales[d.getDay()],
+      actif:  jours.has(d.toDateString()),
+      today:  i === 0,
+    });
+  }
+  // Série : jours consécutifs actifs. Tolérance : si rien aujourd'hui
+  // mais hier actif, on compte depuis hier (la journée n'est pas finie).
+  let serie = 0;
+  const start = jours.has(aujourdhui.toDateString()) ? 0 : 1;
+  for (let i = start; ; i++) {
+    const d = new Date(aujourdhui);
+    d.setDate(aujourdhui.getDate() - i);
+    if (jours.has(d.toDateString())) serie++;
+    else break;
+  }
+  return { semaine, serie };
+}
+
 function calculerMaturite(question, ressources, relances) {
   const matiere    = Math.min(100, (ressources.length / 4) * 100);
   const relRep     = relances.filter(r => r.reponse).length;
@@ -327,6 +360,8 @@ window.DB = {
   creerProduction, getProduction, mettreAJourProduction,
   // Second cerveau
   statsGlobales, listerRecolte,
+  // Régularité / habitude
+  serieGlobale,
   // Maturité
   calculerMaturite, evaluerMaturite,
   // Helpers

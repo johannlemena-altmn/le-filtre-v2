@@ -552,6 +552,42 @@
       margin: 0 auto 20px;
     }
 
+    /* ── Régularité (semaine + série) ── */
+    .serie {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 2px 0 20px;
+    }
+    .serie-week { display: flex; gap: 6px; }
+    .serie-week .day {
+      width: 27px; height: 27px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    .serie-week .day.on {
+      background: var(--terre);
+      border-color: var(--terre);
+      color: #fff;
+    }
+    .serie-week .day.today {
+      box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--terre-soft);
+    }
+    .serie-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      color: var(--terre);
+    }
+    .serie-count.off { color: var(--muted); }
+
     /* ── Tableau de bord (bandeau compact) ── */
     .dash {
       display: flex;
