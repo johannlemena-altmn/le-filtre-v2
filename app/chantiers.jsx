@@ -162,6 +162,44 @@ function ModalQuestion({ chantierId, chantierNom, onClose, onCreer }) {
   );
 }
 
+// ── Une relance (question qui creuse) + sa réponse ─────────
+function RelanceItem({ relance, onRepondu }) {
+  const [edit, setEdit] = useState(!relance.reponse);
+  const [val, setVal]   = useState(relance.reponse || '');
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    if (!val.trim()) return;
+    setSaving(true);
+    await window.DB.repondreRelance(relance.id, val.trim());
+    setEdit(false);
+    setSaving(false);
+    onRepondu();
+  }
+
+  return (
+    <div className="relance-card">
+      <div className="rq">⟡ {relance.texte}</div>
+      {relance.reponse && !edit ? (
+        <div className="ra" onClick={() => setEdit(true)}>« {relance.reponse} »</div>
+      ) : (
+        <>
+          <textarea
+            rows={2}
+            value={val}
+            onChange={e => setVal(e.target.value)}
+            placeholder="Ta réponse — c'est elle qui fait mûrir le fil…"
+            style={{ marginTop: '8px' }}
+          />
+          <button className="btn primary" style={{ marginTop: '8px' }} onClick={save} disabled={!val.trim() || saving}>
+            {saving ? '…' : (relance.reponse ? 'Mettre à jour' : 'Répondre')}
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── Fiche Question ─────────────────────────────────────────
 function FicheQuestion({ questionId, navigate }) {
   const [question, setQuestion]   = useState(null);
@@ -169,6 +207,7 @@ function FicheQuestion({ questionId, navigate }) {
   const [relances, setRelances]   = useState([]);
   const [maturite, setMaturite]   = useState(null);
   const [chantier, setChantier]   = useState(null);
+  const [nouvelleRelance, setNouvelleRelance] = useState('');
   const [loading, setLoading]     = useState(true);
 
   const charger = useCallback(async () => {
@@ -194,6 +233,13 @@ function FicheQuestion({ questionId, navigate }) {
   }, [questionId]);
 
   useEffect(() => { charger(); }, [charger]);
+
+  async function ajouterRelance() {
+    if (!nouvelleRelance.trim()) return;
+    await window.DB.creerRelance({ questionId, texte: nouvelleRelance.trim(), generePar: 'manuel' });
+    setNouvelleRelance('');
+    charger();
+  }
 
   if (loading) return <div className="app"><div className="empty"><span className="e">◐</span><p>Chargement…</p></div></div>;
   if (!question) return <div className="app"><div className="empty"><span className="e">🕳</span><p>Question introuvable.</p></div></div>;
@@ -280,15 +326,50 @@ function FicheQuestion({ questionId, navigate }) {
         </div>
       )}
 
+      {/* Les relances — penser, pas seulement empiler */}
+      <div className="section-t">
+        Relances — {relances.filter(r => r.reponse).length}/{relances.length} traitée{relances.filter(r => r.reponse).length > 1 ? 's' : ''}
+      </div>
+      <div className="card">
+        {relances.length === 0 && (
+          <p style={{ fontSize: '12.5px', color: 'var(--muted)', marginBottom: '12px' }}>
+            Pose-toi une question qui creuse. Y répondre fait <b>penser</b> le fil — pas seulement l'empiler — et fait monter la maturité.
+          </p>
+        )}
+        {relances.map(r => (
+          <RelanceItem key={r.id} relance={r} onRepondu={charger} />
+        ))}
+        <div style={{ marginTop: relances.length ? '12px' : 0 }}>
+          <textarea
+            rows={2}
+            value={nouvelleRelance}
+            onChange={e => setNouvelleRelance(e.target.value)}
+            placeholder="Quelle question te creuse ? (ex. Laquelle de tes ressources te contredit ?)"
+          />
+          <button className="btn" style={{ marginTop: '8px' }} onClick={ajouterRelance} disabled={!nouvelleRelance.trim()}>
+            + Ajouter une relance
+          </button>
+        </div>
+      </div>
+
       <div className="btn-row" style={{ marginTop: '16px' }}>
         {estMure ? (
           <button className="btn primary" onClick={() => navigate('produire', { questionId })}>
             🌾 Produire — le fil est mûr
           </button>
         ) : (
-          <button className="btn" disabled title="S'active quand le fil est mûr (score ≥ 80%)">
-            Produire — fil pas encore mûr ({maturite?.score || 0}%)
-          </button>
+          <>
+            <button className="btn" disabled title="S'active tout seul quand le fil est mûr (score ≥ 80%)">
+              Produire — fil pas encore mûr ({maturite?.score || 0}%)
+            </button>
+            <button
+              className="btn ghost"
+              style={{ fontSize: '12.5px' }}
+              onClick={() => navigate('produire', { questionId })}
+            >
+              Je le sens mûr — produire quand même →
+            </button>
+          </>
         )}
         <button className="btn terre" onClick={() => navigate('capture', { questionId })}>
           + Ajouter une connexion
