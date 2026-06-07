@@ -127,6 +127,51 @@ Branche de travail : `claude/app-improvements-home-screen-JEXOv`.
   ailleurs, sans perdre le *pourquoi* (le diagnostic fondateur de l'app). On passe par le
   modèle existant (Ressource) plutôt que d'inventer un objet « réutilisation ».
 
+### Brique 5 — Coup de pouce d'installation + vercel.json
+*Commit : « feat: coup de pouce d'installation (iOS/Android) + vercel.json »*
+
+- **Intention** : iOS Safari ne propose **jamais** l'installation tout seul → sans aide,
+  « l'avoir sur l'écran d'accueil » échoue silencieusement.
+- **Fait** : `app/app.jsx` `InstallHint` (bandeau dismissible : explication Partager →
+  Sur l'écran d'accueil sur iOS, ou bouton *Installer* via `beforeinstallprompt` sur
+  Android ; masqué si déjà en standalone, mémorise le rejet). `vercel.json` : `sw.js`
+  toujours revalidé (jamais figé en cache), bon type MIME du manifest.
+- **Déploiement** : PR #1 ouverte → Vercel génère un **aperçu** ; URL relayée à Johann
+  pour test iPhone. (Vercel déploie la prod depuis `main`, les previews depuis les PR.)
+
+### Brique 6 — Relances manuelles (sans IA) + agentivité « produire quand même »
+*Commit : « feat: relances manuelles + produire quand même (loop bout-en-bout) »*
+
+- **Intention** : en slice 1, la **réflexion** valait toujours 0 (les relances venaient de
+  l'IA du slice 2) → la maturité plafonnait et **Produire ne s'activait jamais**. Donc
+  Récolte et Reprojeter (briques 2 & 4) étaient intestables. Il fallait débloquer la
+  boucle **sans IA**.
+- **Fait** :
+  - `chantiers.jsx` (FicheQuestion) : section **Relances** — on ajoute une question qui
+    creuse (`creerRelance` `generePar:'manuel'`) et on y répond (`repondreRelance`).
+    Répondre alimente la **réflexion** + l'activité (donc la régularité).
+  - Composant `RelanceItem` (réponse éditable). CSS `.relance-card`.
+  - **« Produire quand même »** : lien discret quand le fil n'est pas mûr. La **régularité**
+    exige plusieurs jours *par design* (c'est l'habitude) → un test en une session plafonne
+    ~73 %. Plutôt que de fausser le seuil, on laisse à Johann le dernier mot (aligné avec
+    « rien ne se fait sans Johann » / l'algo conseille, l'humain tranche).
+- **Effet** : le parcours complet est désormais testable **aujourd'hui** :
+  capture → relance/réponse → produire → récolte → reprojeter.
+
+---
+
+## 2-bis. Convergence vers Zebracorn (décision de trajectoire)
+
+Le Filtre v2 est un **prototype de référence**. La cible réelle est l'app **Zebracorn**,
+où la brique **Capturer** (et la philosophie « intention obligatoire ») doit être intégrée.
+On fera **converger** le reste là-bas, puis on **supprimera** Le Filtre v2.
+
+- Handoff complet : **`MEMO_ZEBRACORN.md`** (spéc de la capture + modèle minimal + acquis
+  techniques + plan de convergence + garde-fous). C'est le doc à ouvrir dans la discussion
+  Zebracorn.
+- Idées futures (des deux côtés) : **`BACKLOG.md`**, avec le filtre JTBD obligatoire avant
+  de coder quoi que ce soit.
+
 ---
 
 ## 3. Plan / prochaines briques
@@ -179,5 +224,8 @@ Idées réutilisables au-delà de Le Filtre, à intégrer aux skills le moment v
 | 3 | feat: traceur de régularité sur le Rituel (semaine + série) | Brique 3 |
 | 4 | feat: réutiliser une production dans un autre chantier | Brique 4 |
 | 5 | docs: journal de construction + plan | (ce fichier) |
+| 6 | feat: coup de pouce d'installation (iOS/Android) + vercel.json | Brique 5 |
+| 7 | feat: relances manuelles + produire quand même (loop bout-en-bout) | Brique 6 |
+| 8 | docs: backlog + mémo Zebracorn + MAJ journal | Convergence |
 
 *Tenir ce tableau à jour à chaque brique. Une ligne par fonctionnalité visible.*
