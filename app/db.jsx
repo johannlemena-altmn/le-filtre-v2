@@ -205,6 +205,60 @@ async function mettreAJourProduction(id, contenu) {
   return db.productions.update(id, { contenu, updatedAt: now() });
 }
 
+// ── SECOND CERVEAU : stats globales + récolte ────────────────
+// La récolte centralise tout ce qui a été produit, pour le
+// reprojeter plus tard sur d'autres projets.
+
+async function statsGlobales() {
+  const [chantiers, questions, productions] = await Promise.all([
+    listerChantiers(),
+    db.questions.toArray(),
+    db.productions.toArray(),
+  ]);
+  const actives = questions.filter(q => q.statut !== 'archivee');
+  return {
+    chantiers:   chantiers.length,
+    vivantes:    actives.filter(q => q.statut === 'vivante').length,
+    mures:       actives.filter(q => q.statut === 'mure').length,
+    produites:   actives.filter(q => q.statut === 'produite').length,
+    productions: productions.length,
+  };
+}
+
+// Réutiliser une production ailleurs : elle devient une ressource
+// (type texte) d'une autre question. C'est "projeter sur un autre
+// projet". L'intention (pourquoi) reste obligatoire — on ne perd jamais
+// le fil de la réutilisation. On garde un lien de provenance dans meta.
+async function reutiliserProduction({ production, questionCibleId, pourquoi }) {
+  return creerRessource({
+    questionId: questionCibleId,
+    type:       'texte',
+    titre:      production.titre || 'Production réutilisée',
+    contenu:    production.contenu || '',
+    pourquoi,
+    meta: {
+      extraitDe: `Production « ${production.titre || 'sans titre'} »`,
+    },
+  });
+}
+
+// Toutes les productions, enrichies de leur question + chantier,
+// les plus récentes d'abord. C'est le cœur du "second cerveau".
+async function listerRecolte() {
+  const prods = await db.productions.orderBy('updatedAt').reverse().toArray();
+  const out = [];
+  for (const p of prods) {
+    const q = await db.questions.get(p.questionId);
+    let chantierNom = null;
+    if (q && q.chantierId) {
+      const c = await db.chantiers.get(q.chantierId);
+      chantierNom = c ? c.nom : null;
+    }
+    out.push({ production: p, question: q || null, chantierNom });
+  }
+  return out;
+}
+
 // ── MATURITÉ ────────────────────────────────────────────────
 // Calculée à la volée — jamais stockée brute (cf. SCHEMA.md)
 
@@ -216,6 +270,39 @@ function scoreRegularite(activiteLog = []) {
   // Jours distincts
   const jours = new Set(recent.map(t => new Date(t).toDateString()));
   return Math.min(100, (jours.size / OBJECTIF_JOURS) * 100);
+}
+
+// Régularité globale : les 7 derniers jours + la série en cours.
+// Ancre l'habitude "revenir" sans gamification lourde.
+async function serieGlobale() {
+  const questions = await db.questions.toArray();
+  const jours = new Set();
+  for (const q of questions) {
+    for (const t of (q.activiteLog || [])) jours.add(new Date(t).toDateString());
+  }
+  const aujourdhui = new Date();
+  const initiales = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+  const semaine = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(aujourdhui);
+    d.setDate(aujourdhui.getDate() - i);
+    semaine.push({
+      lettre: initiales[d.getDay()],
+      actif:  jours.has(d.toDateString()),
+      today:  i === 0,
+    });
+  }
+  // Série : jours consécutifs actifs. Tolérance : si rien aujourd'hui
+  // mais hier actif, on compte depuis hier (la journée n'est pas finie).
+  let serie = 0;
+  const start = jours.has(aujourdhui.toDateString()) ? 0 : 1;
+  for (let i = start; ; i++) {
+    const d = new Date(aujourdhui);
+    d.setDate(aujourdhui.getDate() - i);
+    if (jours.has(d.toDateString())) serie++;
+    else break;
+  }
+  return { semaine, serie };
 }
 
 function calculerMaturite(question, ressources, relances) {
@@ -288,6 +375,10 @@ window.DB = {
   creerRelance, listerRelances, repondreRelance,
   // Productions
   creerProduction, getProduction, mettreAJourProduction,
+  // Second cerveau
+  statsGlobales, listerRecolte, reutiliserProduction,
+  // Régularité / habitude
+  serieGlobale,
   // Maturité
   calculerMaturite, evaluerMaturite,
   // Helpers

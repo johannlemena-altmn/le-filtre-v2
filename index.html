@@ -7,7 +7,15 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Le Filtre">
+  <meta name="description" content="Un rituel de pensée : capture tes intentions, rattache-les à tes questions vivantes, reviens-y jusqu'à maturité.">
   <title>Le Filtre — rituel de pensée</title>
+
+  <!-- PWA : installable + écran d'accueil iOS/Android -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -450,6 +458,31 @@
     .conn .why   { font-family: 'Fraunces', serif; font-style: italic; color: var(--ink-soft); font-size: 13px; margin-top: 3px; }
     .conn .when  { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 4px; }
 
+    /* ── Relances ── */
+    .relance-card {
+      background: var(--blue-soft);
+      border: 1px solid #c6d4d9;
+      border-radius: var(--radius-sm);
+      padding: 13px;
+      margin-bottom: 10px;
+    }
+    .relance-card .rq {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-size: 14px;
+      color: var(--ink);
+      line-height: 1.4;
+    }
+    .relance-card .ra {
+      margin-top: 8px;
+      padding-left: 12px;
+      border-left: 2px solid #c6d4d9;
+      font-size: 13px;
+      color: var(--ink-soft);
+      cursor: pointer;
+    }
+    .relance-card textarea { background: #fff; border-color: #c6d4d9; }
+
     /* ── Produire ── */
     .editor {
       background: var(--surface-2);
@@ -496,6 +529,61 @@
     .mat-item:active { transform: scale(.98); }
     .mat-item .mt { font-weight: 600; }
     .mat-item .mq { font-family: 'Fraunces', serif; font-style: italic; color: var(--ink-soft); margin-top: 2px; }
+
+    /* ── Coup de pouce d'installation ── */
+    .install-hint {
+      position: fixed;
+      left: 12px; right: 12px;
+      bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 12px);
+      z-index: 120;
+      max-width: calc(var(--max-w) - 24px);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      background: var(--surface-2);
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: 0 4px 24px rgba(44,40,34,.16);
+      animation: rise .3s ease forwards;
+    }
+    .install-hint .ih-ico {
+      font-size: 18px;
+      color: var(--terre);
+      flex-shrink: 0;
+    }
+    .install-hint .ih-text {
+      flex: 1;
+      font-size: 12.5px;
+      line-height: 1.4;
+      color: var(--ink-soft);
+    }
+    .install-hint .ih-text b { color: var(--ink); font-weight: 600; }
+    .install-hint .ih-cta {
+      flex-shrink: 0;
+      background: var(--terre);
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      font-size: 12.5px;
+      font-weight: 500;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    .install-hint .ih-close {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 2px;
+    }
+    @media (min-width: 720px) {
+      .install-hint { bottom: 20px; }
+    }
 
     /* ── Toast ── */
     .toast {
@@ -544,6 +632,137 @@
       margin: 0 auto 20px;
     }
 
+    /* ── Régularité (semaine + série) ── */
+    .serie {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 2px 0 20px;
+    }
+    .serie-week { display: flex; gap: 6px; }
+    .serie-week .day {
+      width: 27px; height: 27px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    .serie-week .day.on {
+      background: var(--terre);
+      border-color: var(--terre);
+      color: #fff;
+    }
+    .serie-week .day.today {
+      box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--terre-soft);
+    }
+    .serie-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      color: var(--terre);
+    }
+    .serie-count.off { color: var(--muted); }
+
+    /* ── Tableau de bord (bandeau compact) ── */
+    .dash {
+      display: flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow);
+      padding: 12px 4px;
+      margin-bottom: 18px;
+    }
+    .dash .stat {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+    .dash .stat + .stat::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 50%;
+      transform: translateY(-50%);
+      height: 26px;
+      width: 1px;
+      background: var(--border);
+    }
+    .dash .num {
+      font-family: 'Fraunces', serif;
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1;
+      color: var(--ink);
+    }
+    .dash .num.warm { color: var(--terre); }
+    .dash .num.go   { color: var(--green); }
+    .dash .lbl {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    /* ── Pastilles couleur (chantier) ── */
+    .swatches { display: flex; gap: 9px; flex-wrap: wrap; }
+    .swatch {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform .12s;
+    }
+    .swatch:active { transform: scale(.9); }
+    .swatch.sel { border-color: var(--ink); }
+
+    /* ── Récolte (second cerveau) ── */
+    .recolte-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      padding: 6px 0;
+    }
+    .recolte-item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 12px 0;
+      border-top: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .recolte-item:active .rc-title { color: var(--terre); }
+    .recolte-item .rc-ic {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      background: var(--green-soft);
+      border: 1px solid #cfe0ca;
+    }
+    .recolte-item .rc-title { font-weight: 600; font-size: 13px; line-height: 1.35; }
+    .recolte-item .rc-meta  { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 3px; }
+    .rc-reuse {
+      flex-shrink: 0;
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-2);
+      color: var(--terre);
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform .12s, background .12s;
+    }
+    .rc-reuse:active { transform: scale(.92); background: var(--terre-soft); }
+
     /* ── Empty state ── */
     .empty {
       text-align: center;
@@ -590,5 +809,14 @@
   <script type="text/babel" src="app/chantiers.jsx"></script>
   <script type="text/babel" src="app/produire.jsx"></script>
   <script type="text/babel" src="app/app.jsx"></script>
+
+  <!-- Service worker : hors-ligne + installation sur l'écran d'accueil -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

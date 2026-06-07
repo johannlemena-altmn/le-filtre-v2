@@ -11,11 +11,13 @@ function EcranRituel({ navigate }) {
   const [relances, setRelances]   = useState([]);
   const [maturite, setMaturite]   = useState(null);
   const [chantier, setChantier]   = useState(null);
+  const [serie, setSerie]         = useState(null);
   const [loading, setLoading]     = useState(true);
   const [vide, setVide]           = useState(false);
 
   const charger = useCallback(async () => {
     setLoading(true);
+    setSerie(await window.DB.serieGlobale());
     const q = await window.DB.questionDormante();
     if (!q) {
       setVide(true);
@@ -128,6 +130,22 @@ function EcranRituel({ navigate }) {
       <div className="eyebrow">
         Ton rituel · {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
       </div>
+
+      {serie && (
+        <div className="serie">
+          <div className="serie-week">
+            {serie.semaine.map((d, i) => (
+              <span key={i} className={`day${d.actif ? ' on' : ''}${d.today ? ' today' : ''}`}>
+                {d.lettre}
+              </span>
+            ))}
+          </div>
+          <div className={`serie-count${serie.serie > 0 ? '' : ' off'}`}>
+            {serie.serie > 0 ? `🔥 ${serie.serie} jour${serie.serie > 1 ? 's' : ''}` : 'commence ta série'}
+          </div>
+        </div>
+      )}
+
       <p className="h-screen">Une question t'attend.</p>
       <p className="sub-screen">Dix minutes. Une seule chose à faire&nbsp;: penser un peu plus loin.</p>
 
